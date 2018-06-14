@@ -13,17 +13,17 @@ namespace Svelto.ECS.Example.Survive.Enemies
 	public class EnemyTriggerImplementor : MonoBehaviour, IImplementor, IEnemyTriggerComponent
 	{
 		public EnemyCollisionData entityInRange { get; private set; }
+		private bool _targetInRange;
 
-		void OnTriggerEnter(Collider other)
+		
+		private void OnTriggerEnter(Collider other)
 		{
 			entityInRange = new EnemyCollisionData(new EGID(other.gameObject.GetInstanceID()), true);
 		}
 
-		void OnTriggerExit(Collider other)
+		private void OnTriggerExit(Collider other)
 		{
 			entityInRange = new EnemyCollisionData(new EGID(other.gameObject.GetInstanceID()), false);
 		}
-
-		bool _targetInRange;
 	}
 }

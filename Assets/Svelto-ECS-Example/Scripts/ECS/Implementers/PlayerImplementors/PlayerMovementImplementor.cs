@@ -12,53 +12,35 @@ namespace Svelto.ECS.Example.Survive.Player
 	                                         ITransformComponent
 	{
 		public float speed = 6f; // The speed that the player will move at.
+		private Animator _anim; // Reference to the animator component.
+		private Rigidbody _playerRigidbody; // Reference to the player's rigidbody.
+		private Transform _playerTransform;
+		
 
-		Animator anim; // Reference to the animator component.
-		Rigidbody playerRigidbody; // Reference to the player's rigidbody.
-		Transform playerTransform;
+		public bool       isKinematic   { set { _playerRigidbody.isKinematic = value; } }
+		public Quaternion rotation      { set { _playerRigidbody.MoveRotation(value); } }
+		public float      movementSpeed { get { return speed; } }
+		public string     playAnimation { set { _anim.SetTrigger(value); } }
+		public Vector3    position      { get { return _playerTransform.position; } set { _playerRigidbody.MovePosition(value); } }
 
-		public bool isKinematic
+		
+		public void setState(string n, bool value)
 		{
-			set { playerRigidbody.isKinematic = value; }
-		}
-
-		public Quaternion rotation
-		{
-			set { playerRigidbody.MoveRotation(value); }
-		}
-
-		public float movementSpeed
-		{
-			get { return speed; }
-		}
-
-		public void setState(string name, bool value)
-		{
-			anim.SetBool(name, value);
+			_anim.SetBool(n, value);
 		}
 
 		public void reset()
 		{
-			anim.Rebind();
+			_anim.Rebind();
 		}
 
-		public string playAnimation
-		{
-			set { anim.SetTrigger(value); }
-		}
 
-		void Awake()
+		private void Awake()
 		{
 			// Set up references.
-			anim = GetComponent<Animator>();
-			playerRigidbody = GetComponent<Rigidbody>();
-			playerTransform = transform;
-		}
-
-		public Vector3 position
-		{
-			get { return playerTransform.position; }
-			set { playerRigidbody.MovePosition(value); }
+			_anim = GetComponent<Animator>();
+			_playerRigidbody = GetComponent<Rigidbody>();
+			_playerTransform = transform;
 		}
 	}
 }

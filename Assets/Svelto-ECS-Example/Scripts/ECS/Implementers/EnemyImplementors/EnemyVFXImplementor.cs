@@ -3,10 +3,16 @@ using UnityEngine;
 
 namespace Svelto.ECS.Example.Survive.Enemies
 {
-	public class EnemyVFXImplementor : MonoBehaviour, IImplementor,
-	                                   IEnemyVFXComponent
+	public class EnemyVFXImplementor : MonoBehaviour, IImplementor, IEnemyVFXComponent
 	{
-		void Awake()
+		public ParticleSystem particle; // Reference to the particle system that plays when the enemy is damaged.
+		
+
+		public Vector3 position { set { particle.transform.position = value; } }
+		public DispatchOnSet<bool> play { get; set; }
+
+
+		private void Awake()
 		{
 			// Setting up the references.
 			particle = GetComponentInChildren<ParticleSystem>();
@@ -14,18 +20,9 @@ namespace Svelto.ECS.Example.Survive.Enemies
 			play.NotifyOnValueSet(Play);
 		}
 
-		void Play(int sender, bool value)
+		private void Play(int sender, bool value)
 		{
-			if (value == true) particle.Play();
+			if (value) particle.Play();
 		}
-
-		public ParticleSystem particle; // Reference to the particle system that plays when the enemy is damaged.
-
-		public Vector3 position
-		{
-			set { particle.transform.position = value; }
-		}
-
-		public DispatchOnSet<bool> play { get; set; }
 	}
 }
