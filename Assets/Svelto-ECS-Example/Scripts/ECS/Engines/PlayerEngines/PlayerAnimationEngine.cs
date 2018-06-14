@@ -1,67 +1,70 @@
 using System.Collections;
 using Svelto.Tasks;
 
+
 namespace Svelto.ECS.Example.Survive.Player
 {
-    public class PlayerAnimationEngine : SingleEntityEngine<PlayerEntityView>, IQueryingEntityViewEngine, IStep<DamageInfo, DamageCondition>
-    {
-        public IEntityViewsDB entityViewsDB { get; set; }
-        public void Ready()
-        {
-            _taskRoutine.Start();
-        }
-        
-        public PlayerAnimationEngine()
-        {
-            _taskRoutine = TaskRunner.Instance.AllocateNewTaskRoutine().SetEnumerator(PhysicsTick()).SetScheduler(StandardSchedulers.physicScheduler);
-        }
-        
-        IEnumerator PhysicsTick()
-        {
-            while (entityViewsDB.HasAny<PlayerEntityView>() == false)
-            {
-                yield return null; //skip a frame
-            }
+	public class PlayerAnimationEngine : SingleEntityEngine<PlayerEntityView>, IQueryingEntityViewEngine, IStep<DamageInfo, DamageCondition>
+	{
+		public IEntityViewsDB entityViewsDB { get; set; }
 
-            int targetsCount;
-            var playerEntityViews = entityViewsDB.QueryEntities<PlayerEntityView>(out targetsCount);
-            var playerInputDatas = entityViewsDB.QueryEntities<PlayerInputDataStruct>(out targetsCount);
-            
-            while (true)
-            {
-                var input = playerInputDatas[0].input;
+		public void Ready()
+		{
+			_taskRoutine.Start();
+		}
 
-                // Create a boolean that is true if either of the input axes is non-zero.
-                bool walking = input.x != 0f || input.z != 0f;
+		public PlayerAnimationEngine()
+		{
+			_taskRoutine = TaskRunner.Instance.AllocateNewTaskRoutine().SetEnumerator(PhysicsTick()).SetScheduler(StandardSchedulers.physicScheduler);
+		}
 
-                // Tell the animator whether or not the player is walking.
-                playerEntityViews[0].animationComponent.setState("IsWalking", walking);
+		IEnumerator PhysicsTick()
+		{
+			while (entityViewsDB.HasAny<PlayerEntityView>() == false)
+			{
+				yield return null; //skip a frame
+			}
 
-                yield return null;
-            }
-        }
+			int targetsCount;
+			var playerEntityViews = entityViewsDB.QueryEntities<PlayerEntityView>(out targetsCount);
+			var playerInputDatas = entityViewsDB.QueryEntities<PlayerInputDataStruct>(out targetsCount);
 
-        void TriggerDeathAnimation(EGID targetID)
-        {
-            uint index;
-            var playerEntityViews = entityViewsDB.QueryEntities<PlayerEntityView>(targetID, out index);
-            
-            playerEntityViews[index].animationComponent.playAnimation = "Die";
-        }
+			while (true)
+			{
+				var input = playerInputDatas[0].input;
 
-        public void Step(ref DamageInfo token, DamageCondition condition)
-        {
-            TriggerDeathAnimation(token.entityDamagedID);
-        }
+				// Create a boolean that is true if either of the input axes is non-zero.
+				bool walking = input.x != 0f || input.z != 0f;
 
-        protected override void Add(ref PlayerEntityView entityView)
-        {}
+				// Tell the animator whether or not the player is walking.
+				playerEntityViews[0].animationComponent.setState("IsWalking", walking);
 
-        protected override void Remove(ref PlayerEntityView entityView)
-        {
-            _taskRoutine.Stop();
-        }
-        
-        readonly ITaskRoutine _taskRoutine;
-    }
+				yield return null;
+			}
+		}
+
+		void TriggerDeathAnimation(EGID targetID)
+		{
+			uint index;
+			var playerEntityViews = entityViewsDB.QueryEntities<PlayerEntityView>(targetID, out index);
+
+			playerEntityViews[index].animationComponent.playAnimation = "Die";
+		}
+
+		public void Step(ref DamageInfo token, DamageCondition condition)
+		{
+			TriggerDeathAnimation(token.entityDamagedID);
+		}
+
+		protected override void Add(ref PlayerEntityView entityView)
+		{
+		}
+
+		protected override void Remove(ref PlayerEntityView entityView)
+		{
+			_taskRoutine.Stop();
+		}
+
+		readonly ITaskRoutine _taskRoutine;
+	}
 }

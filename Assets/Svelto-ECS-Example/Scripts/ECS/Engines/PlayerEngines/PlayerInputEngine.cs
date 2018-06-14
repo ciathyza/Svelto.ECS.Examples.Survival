@@ -3,55 +3,59 @@ using Svelto.Tasks;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
 
+
 namespace Svelto.ECS.Example.Survive.Player
 {
-    /// <summary>
-    /// if you need to test input, you can mock this class
-    /// alternativaly you can mock the implementor.
-    /// </summary>
-    public class PlayerInputEngine:SingleEntityEngine<PlayerEntityView>, IQueryingEntityViewEngine
-    {
-        public IEntityViewsDB entityViewsDB { get; set; }
-        public void Ready()
-        {}
-        public PlayerInputEngine()
-        {
-            _taskRoutine = TaskRunner.Instance.AllocateNewTaskRoutine().SetEnumerator(ReadInput());
-        }
+	/// <summary>
+	/// if you need to test input, you can mock this class
+	/// alternativaly you can mock the implementor.
+	/// </summary>
+	public class PlayerInputEngine : SingleEntityEngine<PlayerEntityView>, IQueryingEntityViewEngine
+	{
+		public IEntityViewsDB entityViewsDB { get; set; }
 
-        IEnumerator ReadInput()
-        {
-            while (entityViewsDB.HasAny<PlayerEntityView>() == false)
-            {
-                yield return null; //skip a frame
-            }
-            
-            int targetsCount;
-            var playerEntityViews = entityViewsDB.QueryEntities<PlayerInputDataStruct>(out targetsCount);
-           
-            while (true)
-            {
-                float h = CrossPlatformInputManager.GetAxisRaw("Horizontal");
-                float v = CrossPlatformInputManager.GetAxisRaw("Vertical");
+		public void Ready()
+		{
+		}
 
-                playerEntityViews[0].input = new Vector3(h, 0f, v);
-                playerEntityViews[0].camRay = UnityEngine.Camera.main.ScreenPointToRay(Input.mousePosition);
-                playerEntityViews[0].fire = Input.GetButton("Fire1");
-                
-                yield return null;
-            }
-        }
+		public PlayerInputEngine()
+		{
+			_taskRoutine = TaskRunner.Instance.AllocateNewTaskRoutine().SetEnumerator(ReadInput());
+		}
 
-        protected override void Add(ref PlayerEntityView entityView)
-        {
-            _taskRoutine.Start();
-        }
+		IEnumerator ReadInput()
+		{
+			while (entityViewsDB.HasAny<PlayerEntityView>() == false)
+			{
+				yield return null; //skip a frame
+			}
 
-        protected override void Remove(ref PlayerEntityView entityView)
-        {
-            _taskRoutine.Stop();
-        }
-        
-        ITaskRoutine _taskRoutine;
-    }
+			int targetsCount;
+			var playerEntityViews = entityViewsDB.QueryEntities<PlayerInputDataStruct>(out targetsCount);
+
+			while (true)
+			{
+				float h = CrossPlatformInputManager.GetAxisRaw("Horizontal");
+				float v = CrossPlatformInputManager.GetAxisRaw("Vertical");
+
+				playerEntityViews[0].input = new Vector3(h, 0f, v);
+				playerEntityViews[0].camRay = UnityEngine.Camera.main.ScreenPointToRay(Input.mousePosition);
+				playerEntityViews[0].fire = Input.GetButton("Fire1");
+
+				yield return null;
+			}
+		}
+
+		protected override void Add(ref PlayerEntityView entityView)
+		{
+			_taskRoutine.Start();
+		}
+
+		protected override void Remove(ref PlayerEntityView entityView)
+		{
+			_taskRoutine.Stop();
+		}
+
+		ITaskRoutine _taskRoutine;
+	}
 }
